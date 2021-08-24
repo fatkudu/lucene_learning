@@ -57,11 +57,12 @@ class IndexFilesTest {
         IndexWriter indexWriter = getIndexWriter(indexPath, true);
         assertTrue(true, "Should be true");
         Document doc = new Document();
-        Field idField = new StringField("id", "docid", Field.Store.YES);
-        doc.add(idField);
-        Field contentField = new TextField("content", "’Twas brillig, and the slithy toves\n" +
-                "Did gyre and gimble in the wabe", Field.Store.YES);
-        doc.add(contentField);
+        String docID = "docid";
+        doc.add(new StringField("id", docID, Field.Store.YES));
+        doc.add(new TextField("content", "’Twas brillig, and the slithy toves\n" +
+                "Did gyre and gimble in the wabe", Field.Store.YES));
+        doc.add(new TextField("content", "Can search for this but not see it", Field.Store.YES));
+        doc.add(new Field("hidden", "This is hidden", Field.Store.YES, Field.Index.NO));
         indexWriter.addDocument(doc);
         indexWriter.close();
         log.info("Created index {}", indexPath.toAbsolutePath());
@@ -80,7 +81,8 @@ class IndexFilesTest {
         Document docFound = docsFound.get(0);
         log.info("Document found: {}", docFound);
         String foundId = docFound.get("id");
-        assertEquals("docid", foundId, "ID of document");
+        assertEquals(docID, foundId, "ID of document");
+        assertEquals("This is hidden", docFound.get("hidden"), "hidden document");
         reader.close();
     }
 }
